@@ -1,9 +1,22 @@
 local math = require("math")
 
+-- ====================================
+-- User variables
+-- ====================================
+-- The amount of barrels and chambers
+-- !!! after the mounting point !!!
+local cannonLength = 20
+
+-- The amount of powder charges
+local powderCharges = 8
+
+-- ====================================
+-- Constants (do not change)
+-- ====================================
 local drag = 0.99
 local gravity = 0.05
-local speed = 16
-local cannonLength = 20
+local speed = (powderCharges * 40) / 20 -- speed per tick
+
 
 local function tick(speedVec, posVec)
     local uel = {speedVec[1], speedVec[2]}
@@ -48,8 +61,8 @@ local function adjustTargetDistance(target, yaw, pitch)
 end
 
 local function getPitch(target, yaw, shootHigh)
-    local angle = 30
-    local step = 15
+    local angle = 15
+    local step = 22.5
     local adjustedTarget = adjustTargetDistance(target, yaw, angle)
     local deltaVec, ticks
     while step >= 0.001 do
@@ -85,14 +98,18 @@ local function main()
     local destPos = {tonumber(arg[4]), tonumber(arg[5]), tonumber(arg[6])}
     local target = get2DtargetDistance(startPos, destPos)
     local yaw = getYaw(startPos, destPos)
-    print("Yaw: " .. yaw)
+    print("Yaw: " .. math.floor(yaw * 1000 + 0.5) / 1000)
     local pitch, accuracy, ticks = getPitch(target, yaw, target[1] > 800)
-    print("Pitch: " .. pitch)
-    print("Accuracy: " .. math.sqrt(accuracy[1] ^ 2 + accuracy[2] ^ 2))
+    local acc = math.sqrt(accuracy[1] ^ 2 + accuracy[2] ^ 2)
+    print("Accuracy: " .. math.floor(acc * 1000 + 0.5) / 1000 .. " blocks")
+    print("Pitch: " .. math.floor(pitch * 1000 + 0.5) / 1000)
     print("Estimated arrival time: " .. math.floor(ticks / 20) .. " seconds and " .. ticks % 20 .. " ticks")
 end
 
-if #arg >= 6 then
+if #arg == 6 then
     main()
+else
+    print("Usage: aim <startX> <startY> <startZ> <destX> <destY> <destZ>")
+    print("Note: starting point is the cannon's mounting point (two blocks above the 'Cannon Mount')")
 end
 
